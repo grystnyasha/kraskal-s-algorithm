@@ -1,0 +1,46 @@
+class UnionFind:
+    def __init__(self, n):  # Инициализация структуры данных Union-Find для n элементов
+        self.parent = list(range(n))  # Изначально каждый элемент является своим собственным родителем (корнем)
+        self.rank = [0] * n  # Ранг для оптимизации (объединение по рангу)
+
+    def find(self, i):  # Поиск корня множества, содержащего элемент i (с компрессией пути)
+        if self.parent[i] == i:  # Если элемент является своим собственным родителем - это корень
+            return i
+        self.parent[i] = self.find(self.parent[i])  # Компрессия пути: обновляем родителя, ускоряя будущие запросы
+        return self.parent[i]
+
+    def union(self, i, j):  # Объединение множеств, содержащих элементы i и j (объединение по рангу)
+        root_i = self.find(i)  # Находим корни множеств для i и j
+        root_j = self.find(j)
+        if root_i != root_j:  # Если элементы не в одном множестве
+            if self.rank[root_i] < self.rank[root_j]:  # Объединение по рангу: меньший ранг присоединяется к большему
+                self.parent[root_i] = root_j
+            elif self.rank[root_i] > self.rank[root_j]:
+                self.parent[root_j] = root_i
+            else:  # Если ранги равны
+                self.parent[root_j] = root_i  # Присоединяем одно к другому
+                self.rank[root_i] += 1  # Увеличиваем ранг корня
+            return True  # Объединение прошло успешно
+        return False  # Элементы уже в одном множестве
+
+    def connected(self, i, j):  # Проверка, находятся ли элементы i и j в одном множестве
+        return self.find(i) == self.find(j)  # Элементы в одном множестве, если их корни одинаковы
+
+
+# Пример использования:
+
+# Создаем структуру Union-Find для 5 элементов
+uf = UnionFind(5)
+
+# Выполняем объединения
+uf.union(0, 1)  # Объединяем множества, содержащие 0 и 1
+uf.union(2, 3)  # Объединяем множества, содержащие 2 и 3
+uf.union(1, 3)  # Объединяем множества, содержащие 1 и 3 (и косвенно 0, 1, 2, 3)
+
+# Проверяем связность
+print(f"0 и 1 соединены: {uf.connected(0, 1)}")  # True
+print(f"0 и 4 соединены: {uf.connected(0, 4)}")  # False
+print(f"2 и 3 соединены: {uf.connected(2, 3)}")  # True
+
+# Выводим массив parent для визуализации структуры
+print(f"Массив parent: {uf.parent}")
